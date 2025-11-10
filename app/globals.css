@@ -2,7 +2,27 @@
 @import "tailwindcss";
 
 h1 {
-  @apply font-display
+  @apply font-display;
+}
+
+input, select {
+  @apply border border-zinc-700 bg-neutral-800 p-1 rounded-md outline-none text-sm w-full;
+}
+
+select {
+  @apply p-1.5
+}
+
+small {
+  @apply block text-xs opacity-50 font-bold mt-0.5;
+}
+
+button {
+  @apply border border-zinc-700 rounded-2xl bg-neutral-800 cursor-pointer px-2 py-2 transition-all hover:rounded-lg;
+}
+
+span {
+  @apply text-xs;
 }
 
 :root {
