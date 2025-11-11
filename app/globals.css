@@ -38,7 +38,7 @@ h1 {
 }
 
 input, select {
-  @apply border border-zinc-700 bg-neutral-800 p-1 rounded-md outline-none text-sm w-full font-semibold;
+  @apply border border-zinc-700 dark:bg-neutral-800 p-1 rounded-md outline-none text-sm w-full font-semibold;
 }
 
 select {
@@ -50,7 +50,7 @@ small {
 }
 
 button {
-  @apply border border-zinc-700 rounded-2xl bg-neutral-800 cursor-pointer px-2 py-2 transition-all hover:rounded-lg;
+  @apply border border-zinc-700 rounded-2xl dark:bg-neutral-800 cursor-pointer px-2 py-2 transition-all hover:rounded-lg;
 }
 
 button:disabled {

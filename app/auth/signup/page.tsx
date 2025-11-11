@@ -2,7 +2,7 @@
 
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import Link from "next/link";
-import Image from "next/image";
+import Logo from "@/components/Logo";
 import * as Yup from "yup";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -49,9 +49,11 @@ export default function Auth() {
 
   return (
     <>
-    <Link href="/" className="absolute top-5 left-5 text-lg font-bold font-display">
-      <Image src="/logo.svg" height={50} width={50} alt="Logo" />
+
+    <Link href="/">
+      <Logo height={50} width={50} className="absolute left-2 top-3" />
     </Link>
+
     <div className="flex justify-center items-center h-screen">
       <div className="border border-zinc-600 rounded-xl p-5">
 

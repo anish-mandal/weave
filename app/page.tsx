@@ -1,8 +1,7 @@
 'use client'
 
-import Link from "next/link";
-import Image from "next/image";
 import LinkButton from "@/components/LinkButton";
+import Logo from "@/components/Logo";
 
 export default function Home() {
   return (
@@ -13,7 +12,7 @@ export default function Home() {
       <hr/>
       <p className="font-display text-2xl mt-3">Connect. Create. Collaborate.{" "}
         <LinkButton icon={
-            <Image src="/logo.svg" alt="Logo" width={30} height={30} />
+            <Logo height={30} width={30} />
           } href="/auth" className="">
           Start Weaving
         </LinkButton>
