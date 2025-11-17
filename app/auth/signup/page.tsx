@@ -10,8 +10,9 @@ import { useRouter } from "next/navigation";
 const SignUpSchema = Yup.object({
   fullName: Yup.string().max(100, "Too Long").min(2, "Too Short").required("Required").matches(/^[\p{L}][\p{L}'\- ]*$/u, "Enter a valid name"),
   email: Yup.string().email("Please enter a valid email").required("Required"),
+  dateOfBirth: Yup.date().max(Date(), "Please enter a valid date of birth").required("Required"),
   phoneCode: Yup.mixed().oneOf(["+91"] as const),
-  phone: Yup.string().min(10, "Please enter a valid phone number").required("Required").matches(/^\d{10}$/, "Please enter a valid phone number"),
+  phoneNumber: Yup.string().min(10, "Please enter a valid phone number").required("Required").matches(/^\d{10}$/, "Please enter a valid phone number"),
   password: Yup.string().min(8, "Minimum 8 characters").required("Required").test({
     name: "is-strong",
     test(value, ctx) {
@@ -23,6 +24,47 @@ const SignUpSchema = Yup.object({
     }
   })
 })
+
+async function signUpSubmit(values: Yup.InferType<typeof SignUpSchema>, router: ReturnType<typeof useRouter>) {
+  return new Promise(async (resolve) => {
+    try {
+      const userName = values.fullName.split(" ").join(".")
+
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          userName: userName,
+          fullName: values.fullName,
+          email: values.email,
+          dateOfBirth: new Date(values.dateOfBirth).toISOString(),
+          phoneCode: values.phoneCode,
+          phoneNumber: values.phoneNumber,
+          password: values.password
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message || "Signup failed");
+        resolve(null);
+        return;
+      }
+
+      toast.success("Account created successfully!");
+      router.replace("/auth/login");
+      resolve(null);
+
+    } catch (err) {
+      toast.error("Something went wrong");
+      resolve(null);
+    }
+  });
+}
+
 
 interface FormFieldProps {
   name: string;
@@ -67,30 +109,14 @@ export default function Auth() {
         initialValues={{
           fullName: "",
           email: "",
+          dateOfBirth: new Date(),
           phoneCode: "+91",
-          phone: "",
+          phoneNumber: "",
           password: ""
         }}
         validationSchema={SignUpSchema}
-        onSubmit={values => {
+        onSubmit={values => signUpSubmit(values, router)}>
 
-          return new Promise((resolve, _) => {
-            console.log(values)
-            toast('Nothing Happened',
-              {
-                icon: '👏',
-                style: {
-                  borderRadius: '10px',
-                  background: '#333',
-                  color: '#fff',
-                },
-              }
-            );
-            router.replace("/auth/login")
-            resolve(null)
-          })
-
-        }}>
         {({ isSubmitting, isValid }) => (
           <Form className="flex flex-col gap-3">
             <FormField name="fullName" label="Full Name">
@@ -99,6 +125,10 @@ export default function Auth() {
 
             <FormField name="email" label="Email">
               <Field name="email" />
+            </FormField>
+
+            <FormField name="dateOfBirth" label="Date of Birth">
+              <Field type="date" name="dateOfBirth" />
             </FormField>
 
             <label>
@@ -112,11 +142,11 @@ export default function Auth() {
 
                 <label className="flex flex-col w-full flex-3">
                   <span className="text-right font-bold mb-1">Phone</span>
-                  <Field name="phone" className="w-full" />
+                  <Field name="phoneNumber" className="w-full" />
                 </label>
               </div>
 
-              <ErrorMessage name="phone">
+              <ErrorMessage name="phoneNumber">
                 {msg => (<small>{msg}</small>)}
               </ErrorMessage>
             </label>

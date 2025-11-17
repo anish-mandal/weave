@@ -5,6 +5,7 @@ import Link from "next/link";
 import Logo from "@/components/Logo";
 import * as Yup from "yup";
 import toast, { Toaster } from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const LoginSchema = Yup.object({
   email: Yup.string().email("Please enter a valid email").required("Required"),
@@ -31,7 +32,41 @@ function FormField({ name, label, children }: FormFieldProps) {
   )
 }
 
+async function loginUser(
+  values: { email: string; password: string },
+  router: ReturnType<typeof useRouter>
+) {
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(values),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      toast.error(data.message || "Login failed");
+      return null;
+    }
+
+    toast.success("Logged in!");
+
+    router.push("/dashboard");
+    return data;
+  } catch (err) {
+    console.error(err);
+    toast.error("Something went wrong");
+    return null;
+  }
+}
+
+
 export default function Auth() {
+  const router = useRouter();
+
   return (
     <>
     <Link href="/">
@@ -52,24 +87,8 @@ export default function Auth() {
           password: ""
         }}
         validationSchema={LoginSchema}
-        onSubmit={values => {
+        onSubmit={values => loginUser(values, router)}>
 
-          return new Promise((resolve, _) => {
-            console.log(values)
-            toast('Nothing Happened',
-              {
-                icon: '👏',
-                style: {
-                  borderRadius: '10px',
-                  background: '#333',
-                  color: '#fff',
-                },
-              }
-            );
-            resolve(null)
-          })
-
-        }}>
         {({ isSubmitting, isValid }) => (
           <Form className="flex flex-col gap-3">
             <FormField name="email" label="Email">
