@@ -2,7 +2,6 @@
 
 import { Formik, Form } from "formik";
 import Link from "next/link";
-import Logo from "@/components/Logo";
 import * as Yup from "yup";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";

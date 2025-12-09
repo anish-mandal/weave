@@ -10,7 +10,6 @@ import useSWR from "swr";
 import Response from "@/types/response"
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import Trending from "./trending";
 
 interface IGetUser extends Response {
   body: {

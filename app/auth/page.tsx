@@ -1,8 +1,8 @@
 "use client"
 
-import LinkButton from "@/components/LinkButton";
+import LinkButton from "@/components/link-button";
 import Link from "next/link";
-import Logo from "@/components/Logo";
+import Logo from "@/components/logo";
 
 export default function Auth() {
   return (
