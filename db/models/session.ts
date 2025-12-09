@@ -3,6 +3,7 @@ import type { Types } from "mongoose";
 import { randomBytes } from "crypto";
 import { hash, compare } from "bcryptjs";
 import ISession from "@/types/session";
+import { connectDB } from "../connect";
 
 const sessionSchema = new Schema<ISession>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -12,7 +13,7 @@ const sessionSchema = new Schema<ISession>({
   revokedAt: { type: Date, default: null }
 }, { timestamps: true });
 
-const Session = models.Session || model<ISession>("session", sessionSchema);
+const Session = models.Session || model<ISession>("Session", sessionSchema);
 
 export async function createSession(userId: Types.ObjectId) {
   const prefix = randomBytes(6).toString("hex");
@@ -31,24 +32,9 @@ export async function createSession(userId: Types.ObjectId) {
   return { token, expiresAt };
 }
 
-export async function getSession(token: string) {
-  const [prefix, secret] = token.split(".");
-  if (!prefix || !secret) return null;
-
-  const session = await Session.findOne({ prefix });
-  if (!session) return null;
-
-  if (session.revokedAt) return null;
-
-  if (session.expiresAt < new Date()) return null;
-
-  const valid = await compare(secret, session.secretHash);
-  if (!valid) return null;
-
-  return session;
-}
-
 export async function validateSession(token: string) {
+  await connectDB();
+
   if (!token) return null;
 
   const [prefix, secret] = token.split(".");

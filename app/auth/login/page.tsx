@@ -1,36 +1,20 @@
 "use client"
 
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form } from "formik";
 import Link from "next/link";
-import Logo from "@/components/Logo";
-import * as Yup from "yup";
+import { object, string } from "yup";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { FieldError, FieldGroup, FieldLabel, Field, FieldDescription } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import PasswordInput from "@/components/password-input";
+import { Button } from "@/components/ui/button";
 
-const LoginSchema = Yup.object({
-  email: Yup.string().email("Please enter a valid email").required("Required"),
-  password: Yup.string().min(8, "Minimum 8 characters").required("Required")
+const LoginSchema = object({
+  email: string().email("Please enter a valid email").required("Required"),
+  password: string().min(8, "Minimum 8 characters").required("Required")
 })
-
-interface FormFieldProps {
-  name: string;
-  label: string;
-  children: React.ReactNode;
-}
-
-function FormField({ name, label, children }: FormFieldProps) {
-  return (
-    <label>
-      <span className="text-xs font-bold ml-0.5">{label}</span><br />
-      {children}<br/>
-      <ErrorMessage name={name}>
-        {msg => (
-          <small>{msg}</small>
-        )}
-      </ErrorMessage>
-    </label>
-  )
-}
 
 async function loginUser(
   values: { email: string; password: string },
@@ -52,8 +36,6 @@ async function loginUser(
       return null;
     }
 
-    toast.success("Logged in!");
-
     router.push("/dashboard");
     return data;
   } catch (err) {
@@ -69,43 +51,67 @@ export default function Auth() {
 
   return (
     <>
-    <Link href="/">
-      <Logo height={50} width={50} className="absolute left-2 top-3" />
-    </Link>
-    <div className="flex justify-center items-center h-screen">
-      <div className="border border-zinc-600 rounded-xl p-5">
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm">
+        <Card>
+          <CardHeader>
+            <CardTitle>Login to your account</CardTitle>
+            <CardDescription>Enter your email below to login to your account</CardDescription>
+          </CardHeader>
 
-      <div className="font-bold">
-        Log In
-      </div>
-      <small>Enter your account information to login.</small>
-      <br />
+        <CardContent>
+          <Formik
+            initialValues={{
+              email: "",
+              password: ""
+            }}
+            validationSchema={LoginSchema}
+            onSubmit={values => loginUser(values, router)}>
+            {({ isSubmitting, isValid, values, errors, touched, handleChange, handleBlur }) => (
+              <Form className="flex flex-col gap-3">
+                <FieldGroup>
+                  <Field>
+                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                    <Input
+                      id="email"
+                      name="email"
+                      placeholder="m@example.com"
+                      value={values.email}
+                      type="email"
+                      required
+                      onChange={handleChange}
+                      onBlur={handleBlur} />
+                    <FieldError>{touched.email && errors.email ? errors.email : null}</FieldError>
+                  </Field>
 
-      <Formik
-        initialValues={{
-          email: "",
-          password: ""
-        }}
-        validationSchema={LoginSchema}
-        onSubmit={values => loginUser(values, router)}>
+                  <Field>
+                    <FieldLabel htmlFor="password">Password</FieldLabel>
+                    <PasswordInput
+                      id="password"
+                      name="password"
+                      value={values.password}
+                      placeholder="Password"
+                      required
+                      onChange={handleChange}
+                      onBlur={handleBlur} />
+                    <FieldError>{touched.password && errors.password ? errors.password : null}</FieldError>
+                  </Field>
 
-        {({ isSubmitting, isValid }) => (
-          <Form className="flex flex-col gap-3">
-            <FormField name="email" label="Email">
-              <Field name="email" />
-            </FormField>
+                  <FieldGroup>
+                    <Field>
+                      <Button type="submit" disabled={isSubmitting || !isValid}>Login</Button>
+                    </Field>
 
-
-            <FormField name="password" label="Password">
-              <Field type="password" name="password" />
-            </FormField>
-
-            <button type="submit" disabled={isSubmitting || !isValid}>
-              Submit
-            </button>
-          </Form>
-        )}
-      </Formik>
+                    <FieldDescription className="text-center">
+                      Don&apos;t have an account? <Link href="/auth/signup">Sign up</Link>
+                    </FieldDescription>
+                  </FieldGroup>
+                </FieldGroup>
+              </Form>
+            )}
+          </Formik>
+        </CardContent>
+      </Card>
     </div>
   </div>
   <Toaster toastOptions={{

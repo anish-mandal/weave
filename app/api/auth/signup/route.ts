@@ -42,16 +42,13 @@ export async function POST(req: Request) {
   const existingSession = cookieStore.get("session");
 
   if (existingAccess || existingSession) {
-    return Response.json(
-      error("already logged in"),
-      { status: 409 }
-    );
+    return Response.json(success("Already logged in", {}));
   }
 
   try {
     body = await req.json();
   } catch (e) {
-    return Response.json(error("invalid json"), { status: 422 })
+    return Response.json(error("Invalid JSON"), { status: 422 })
   }
 
   try {
@@ -61,27 +58,27 @@ export async function POST(req: Request) {
       return Response.json(error(e.message), { status: 400 })
     }
 
-    return Response.json(error("validation failed"), { status: 400 })
+    return Response.json(error("Validation failed"), { status: 400 })
   }
 
   const existingUser = await db.user.confirm(user.email, user.userName);
   if (existingUser) {
-    return Response.json(error("user already exist"), { status: 409 })
+    return Response.json(error("User already exist"), { status: 409 })
   }
 
   try {
     user.password = await hash(user.password, 10)
   } catch (e) {
-    return Response.json(error("unable to hash password"), { status: 500 })
+    return Response.json(error("Unable to hash password"), { status: 500 })
   }
 
   try {
     await db.user.create(user);
 
-    return Response.json(success("user created", {}))
+    return Response.json(success("User created", {}))
   } catch (e) {
     console.log(e)
-    return Response.json(error("unable to create user"), { status: 500 })
+    return Response.json(error("Unable to create user"), { status: 500 })
   }
 }
 

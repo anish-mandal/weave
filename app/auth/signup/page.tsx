@@ -1,11 +1,17 @@
 "use client"
 
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form } from "formik";
 import Link from "next/link";
 import Logo from "@/components/Logo";
 import * as Yup from "yup";
 import toast, { Toaster } from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { Card, CardTitle, CardHeader, CardDescription, CardContent } from "@/components/ui/card";
+import { Field, FieldLabel, FieldError, FieldGroup, FieldDescription } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Select, SelectValue, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import PasswordInput from "@/components/password-input";
+import { Button } from "@/components/ui/button";
 
 const SignUpSchema = Yup.object({
   fullName: Yup.string().max(100, "Too Long").min(2, "Too Short").required("Required").matches(/^[\p{L}][\p{L}'\- ]*$/u, "Enter a valid name"),
@@ -54,10 +60,8 @@ async function signUpSubmit(values: Yup.InferType<typeof SignUpSchema>, router: 
         return;
       }
 
-      toast.success("Account created successfully!");
       router.replace("/auth/login");
       resolve(null);
-
     } catch (err) {
       toast.error("Something went wrong");
       resolve(null);
@@ -65,111 +69,148 @@ async function signUpSubmit(values: Yup.InferType<typeof SignUpSchema>, router: 
   });
 }
 
-
-interface FormFieldProps {
-  name: string;
-  label: string;
-  children: React.ReactNode;
-}
-
-function FormField({ name, label, children }: FormFieldProps) {
-  return (
-    <label>
-      <span className="text-xs font-bold ml-0.5">{label}</span><br />
-      {children}<br/>
-      <ErrorMessage name={name}>
-        {msg => (
-          <small>{msg}</small>
-        )}
-      </ErrorMessage>
-    </label>
-  )
-}
-
 export default function Auth() {
   const router = useRouter()
 
   return (
     <>
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-sm">
 
-    <Link href="/">
-      <Logo height={50} width={50} className="absolute left-2 top-3" />
-    </Link>
+       <Card>
+        <CardHeader>
+          <CardTitle>Create an account</CardTitle>
+          <CardDescription>
+            Enter your information below to create your account
+          </CardDescription>
+        </CardHeader>
 
-    <div className="flex justify-center items-center h-screen">
-      <div className="border border-zinc-600 rounded-xl p-5">
+        <CardContent>
+          <Formik
+            initialValues={{
+              fullName: "",
+              email: "",
+              dateOfBirth: new Date(),
+              phoneCode: "+91",
+              phoneNumber: "",
+              password: ""
+            }}
+            validationSchema={SignUpSchema}
+            onSubmit={values => signUpSubmit(values, router)}>
 
-      <div className="font-bold">
-        Sign Up
-      </div>
-      <small>Enter your information to create your account.</small>
-      <br />
+            {({ isSubmitting, isValid, handleChange, handleBlur, values, errors, touched }) => (
+              <Form>
+                <FieldGroup>
 
-      <Formik
-        initialValues={{
-          fullName: "",
-          email: "",
-          dateOfBirth: new Date(),
-          phoneCode: "+91",
-          phoneNumber: "",
-          password: ""
-        }}
-        validationSchema={SignUpSchema}
-        onSubmit={values => signUpSubmit(values, router)}>
-
-        {({ isSubmitting, isValid }) => (
-          <Form className="flex flex-col gap-3">
-            <FormField name="fullName" label="Full Name">
-              <Field name="fullName" />
-            </FormField>
-
-            <FormField name="email" label="Email">
-              <Field name="email" />
-            </FormField>
-
-            <FormField name="dateOfBirth" label="Date of Birth">
-              <Field type="date" name="dateOfBirth" />
-            </FormField>
-
-            <label>
-              <div className="flex w-full gap-2">
-                <label className="flex flex-col flex-1 mb-1">
-                  <span className="font-bold mb-1">Code</span>
-                  <Field name="phoneCode" as="select">
-                    <option value="+91">+91</option>
+                  <Field>
+                    <FieldLabel htmlFor="name">Full Name</FieldLabel>
+                    <Input
+                      id="name"
+                      type="text"
+                      name="fullName"
+                      placeholder="John Doe"
+                      required
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values.fullName} />
+                    <FieldError>
+                      {touched.fullName && errors.fullName ? errors.fullName : null}
+                    </FieldError>
                   </Field>
-                </label>
 
-                <label className="flex flex-col w-full flex-3">
-                  <span className="text-right font-bold mb-1">Phone</span>
-                  <Field name="phoneNumber" className="w-full" />
-                </label>
-              </div>
+                  <Field>
+                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                    <Input
+                      id="email"
+                      type="email"
+                      name="email"
+                      placeholder="m@example.com"
+                      required
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values.email} />
+                    <FieldError>
+                      {touched.email && errors.email ? errors.email : null}
+                    </FieldError>
+                  </Field>
 
-              <ErrorMessage name="phoneNumber">
-                {msg => (<small>{msg}</small>)}
-              </ErrorMessage>
-            </label>
+                  <Field>
+                    <FieldLabel htmlFor="dateOfBirth">Date of Birth</FieldLabel>
+                    <Input
+                      id="dateOfBirth"
+                      type="date"
+                      name="dateOfBirth"
+                      required
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      value={values.dateOfBirth.toLocaleString()} />
+                    <FieldError>
+                      {touched.dateOfBirth && errors.dateOfBirth ? (<>{errors.dateOfBirth}</>) : ""}
+                    </FieldError>
+                  </Field>
 
-            <FormField name="password" label="Password">
-              <Field type="password" name="password" />
-            </FormField>
+                  <FieldGroup className="grid grid-cols-3 gap-4">
+                    <Field>
+                      <FieldLabel>Code</FieldLabel>
+                      <Select value={values.phoneCode}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="+91" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="+91">+91</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
 
-            <button type="submit" disabled={isSubmitting || !isValid}>
-              Submit
-            </button>
-          </Form>
-        )}
-      </Formik>
+                    <Field className="col-span-2">
+                      <FieldLabel htmlFor="phone">Number</FieldLabel>
+                      <Input
+                        type="tel"
+                        id="phone"
+                        placeholder="9876543210"
+                        name="phoneNumber"
+                        onChange={handleChange}
+                        required
+                        onBlur={handleBlur}
+                        value={values.phoneNumber} />
+                      <FieldError className="col-span-full">
+                        {touched.phoneNumber && errors.phoneNumber ? errors.phoneNumber : null}
+                      </FieldError>
+                    </Field>
+
+                  </FieldGroup>
+
+                  <Field>
+                    <FieldLabel htmlFor="password">Password</FieldLabel>
+                    <PasswordInput
+                      id="password"
+                      placeholder="Password"
+                      value={values.password}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      required />
+
+                    <FieldError>
+                      {touched.password && errors.password ? errors.password : null}
+                    </FieldError>
+                  </Field>
+
+                  <FieldGroup>
+                    <Button type="submit" disabled={isSubmitting || !isValid}>Submit</Button>
+                    <FieldDescription className="px-6 text-center">
+                      Already have an account? <Link href="/auth/login">Log In</Link>
+                    </FieldDescription>
+                  </FieldGroup>
+
+                </FieldGroup>
+              </Form>
+            )}
+          </Formik>
+        </CardContent>
+      </Card>
     </div>
   </div>
-  <Toaster toastOptions={{
-    style: {
-      borderRadius: '10px',
-      background: '#333',
-      color: '#fff',
-    },
-  }} />
+  <Toaster toastOptions={{ style: { borderRadius: '10px', background: '#333', color: '#fff', }, }} />
   </>
   )
 }

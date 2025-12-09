@@ -24,7 +24,7 @@ export async function GET() {
   return Response.json(
     success("ok", {
       user: {
-        id: user._id,
+        userName: user.userName,
         fullName: user.fullName,
         email: user.email,
       }

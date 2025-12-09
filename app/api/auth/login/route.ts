@@ -13,7 +13,7 @@ interface LoginSchema {
 }
 
 const userLoginSchema = object<LoginSchema>({
-  email: string().email("invalid email").required("email is required"),
+  email: string().email("Invalid email").required("Email is required"),
   password: string().min(8, "Password must contain minimum 8 characters").required("Password is required").test({
     name: "is-strong",
     test(value, ctx) {
@@ -35,16 +35,13 @@ export async function POST(req: Request) {
   const existingSession = cookieStore.get("session");
 
   if (existingAccess || existingSession) {
-    return Response.json(
-      error("already logged in"),
-      { status: 409 }
-    );
+    return Response.json(success("Already logged in", {}));
   }
 
   try {
     body = await req.json();
   } catch (e) {
-    return Response.json(error("invalid json"), { status: 422 })
+    return Response.json(error("Invalid JSON"), { status: 422 })
   }
 
   try {
@@ -54,12 +51,12 @@ export async function POST(req: Request) {
       return Response.json(error(e.message), { status: 400 })
     }
 
-    return Response.json(error("validation failed"), { status: 400 })
+    return Response.json(error("Validation failed"), { status: 400 })
   }
 
   user = await db.user.getByEmail(body.email);
   if (!user) {
-    return Response.json(error("user not found"), { status: 400 })
+    return Response.json(error("User not found"), { status: 400 })
   }
 
   const match = await compare(body.password, user.password);
@@ -83,9 +80,9 @@ export async function POST(req: Request) {
       maxAge: 60 * 15
     })
 
-    return Response.json(success("authorized", {}))
+    return Response.json(success("Authorized", {}))
   } else {
-    return Response.json(error("email or password incorrect"), { status: 401 })
+    return Response.json(error("Email or Password incorrect"), { status: 401 })
   }
 }
 

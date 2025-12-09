@@ -10,7 +10,7 @@ export async function GET() {
 
   let presentAccessToken = cookieStore.get("access");
   if (presentAccessToken) {
-    return Response.json(error("already refreshed"), { status: 409 })
+    return Response.json(null, { status: 204 })
   }
 
   const sessionToken = cookieStore.get("session")?.value;
@@ -38,14 +38,6 @@ export async function GET() {
     maxAge: 60 * 15,
   });
 
-  return Response.json(
-    success("refreshed", {
-      user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-      }
-    })
-  );
+  return Response.json(success("refreshed", {}));
 }
 

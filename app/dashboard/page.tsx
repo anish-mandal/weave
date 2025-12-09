@@ -1,87 +1,75 @@
 "use client";
 
+import Logo from "@/components/logo";
+import Link from "next/link";
+import Ideas from "./ideas";
+import IdeaInput from "./input";
+import Profile from "./profile";
+import { Separator } from "@/components/ui/separator";
 import useSWR from "swr";
+import Response from "@/types/response"
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import type IResponse from "@/types/response";
+import Trending from "./trending";
 
-interface User {
-  id: string;
-  fullName: string;
-  email: string;
-}
-
-interface ApiResponse extends IResponse {
-  body: { user: User }
-}
-
-const fetcher = async (url: string): Promise<ApiResponse> => {
-  const res = await fetch(url);
-
-  if (res.status === 401) {
-    const error = new Error("Unauthorized");
-    (error as any).status = 401;
-    throw error;
+interface IGetUser extends Response {
+  body: {
+    user: {
+      userName: string,
+      fullName: string,
+      email: string
+    }
   }
+}
 
-  return res.json();
-};
+function useUser() {
+  const fetcher = (url: string) => fetch(url).then(res => res.json() as Promise<IGetUser>);
+  const {data, error, isLoading} = useSWR<IGetUser>("/api/me", fetcher);
+  const isLoggedIn = data?.type === "success" ? true : false;
+
+  return {
+    data,
+    error,
+    isLoading,
+    isLoggedIn
+  }
+}
 
 export default function Dashboard() {
   const router = useRouter();
-
-  const { data, error, isLoading } = useSWR("/api/me", fetcher, {
-    shouldRetryOnError: false,
-  });
+  const {error, isLoading, isLoggedIn} = useUser();
 
   useEffect(() => {
-    if (error && (error as any).status === 401) {
-      router.push("/auth/login");
+    if (error) {
+      return
     }
-  }, [error, router]);
 
-  if (isLoading) {
-    return <div className="flex justify-center mt-10">Loading...</div>;
-  }
+    if (!isLoading && !isLoggedIn) {
+      router.replace("/auth/login")
+    }
+  }, [isLoading, isLoggedIn, router])
 
-  if (error) {
-    return <div className="text-center mt-10 text-red-500">Something went wrong.</div>;
-  }
-
-  const user: User = data?.body?.user!;
+  if (isLoading)
+    return (
+      <>Loading!</>
+    )
 
   return (
-    <div className="p-5">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
-
-      <div className="mt-5 border p-4 rounded-lg">
-        <h2 className="text-xl font-semibold mb-2">
-          Welcome, {user.fullName}
-        </h2>
-        <p>Email: {user.email}</p>
-        <p>User ID: {user.id}</p>
+    <div>
+      <menu className="fixed w-screen border-b px-5 py-3 top-0 flex justify-between items-center bg-background z-50">
+        <Link href="/dashboard">
+          <Logo height={30} width={30} />
+        </Link>
+        <Profile />
+      </menu>
+      <div className="max-w-4xl mx-auto flex flex-col justify-center p-2 gap-5">
+        <IdeaInput />
+        <Separator className="my-4" />
+        <div className="flex flex-col gap-2">
+          <h1 className="font-bold text-xl">Your Ideas</h1>
+          <Ideas />
+        </div>
       </div>
-
-      <br />
-
-      <button
-        onClick={async () => {
-          try {
-            const res = await fetch("/api/auth/logout");
-
-          if (!res.ok) {
-            console.error("Logout failed");
-            return;
-          }
-
-          router.push("/auth/login");
-          } catch (err) {
-          console.error("Logout error:", err);
-          }
-          }}
-          className="hover:bg-red-400"
-        >Logout</button>
-
     </div>
   );
 }
