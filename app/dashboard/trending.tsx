@@ -1,11 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Drawer, DrawerContent, DrawerTitle, DrawerHeader } from "@/components/ui/drawer"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { CheckCircle } from "lucide-react"
+import { formatDistanceToNow } from "date-fns";
 import useSWR from "swr";
 import fetcher from "./fetcher";
 import {
@@ -17,13 +18,19 @@ import {
 } from "@/components/ui/empty"
 import { Lightbulb } from "lucide-react";
 import IResponse from "@/types/response";
-import { Item, ItemTitle, ItemContent, ItemDescription } from "@/components/ui/item";
+import { Item, ItemTitle, ItemContent, ItemDescription, ItemMedia } from "@/components/ui/item";
+import Avatar from "boring-avatars";
 
 type IGetIdeaBody = {
   _id: string,
   title: string,
   description: string,
   likes: number,
+  author: {
+    fullName: string,
+    userName: string,
+    email: string
+  }
   status: "draft" | "published" | "archived",
   createdAt: string,
   updatedAt: string
@@ -34,7 +41,7 @@ export interface IGetIdea extends IResponse {
 }
 
 function useIdeas() {
-  const { data, error, isLoading } = useSWR<IGetIdea>("/api/me/ideas", fetcher<IGetIdea>);
+  const { data, error, isLoading } = useSWR<IGetIdea>("/api/ideas", fetcher<IGetIdea>);
 
   return {
     data: data?.body ?? [],
@@ -44,7 +51,7 @@ function useIdeas() {
 }
 
 
-export default function Ideas() {
+export default function Trending() {
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const { data: ideas, error, isLoading } = useIdeas();
@@ -74,22 +81,35 @@ export default function Ideas() {
 
   return (
     <>
-      <div className="grid">
+      <div className="grid gap-2">
         {ideas.map((ele, index) => (
-          <Item key={index} size="sm" className="p-1">
-            <ItemContent>
-              <ItemTitle className="truncate">
+          <Card key={index} className="w-full">
+            <CardHeader>
+              <Item className="p-0">
+                <ItemMedia>
+                  <Avatar name={ele.author.fullName} />
+                </ItemMedia>
+
+                <ItemContent>
+                  <ItemTitle>
+                    {ele.author.fullName}
+                  </ItemTitle>
+                  <ItemContent>
+                    {ele.author.email}
+                  </ItemContent>
+                </ItemContent>
+              </Item>
+            </CardHeader>
+
+            <CardContent>
+              <CardTitle className="truncate">
                 <Button variant="link" className="sm:text-xl text-md" onClick={() => {
                   setIndex(index);
                   setOpen(true);
                 }}>{ele.title}</Button>
-              </ItemTitle>
-
-              <ItemDescription className="line-clamp-1">
-                {ele.description}
-              </ItemDescription>
-            </ItemContent>
-          </Item>
+              </CardTitle>
+            </CardContent>
+          </Card>
         ))}
 
       </div>

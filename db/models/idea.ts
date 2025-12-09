@@ -44,7 +44,7 @@ export async function viewAllIdeas() {
   await connectDB();
 
   const ideas = await Idea.find()
-    .populate("author", "userName")
+    .populate("author", "userName fullName email")
     .sort({ createdAt: -1 });
 
   return ideas;

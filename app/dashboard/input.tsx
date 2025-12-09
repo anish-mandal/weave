@@ -39,7 +39,8 @@ export default function IdeaInput() {
                 placeholder="Enter a short, catchy title"
                 value={values.title}
                 onChange={handleChange}
-                onBlur={handleBlur} />
+                onBlur={handleBlur}
+                />
             </InputGroup>
           </Field>
 
